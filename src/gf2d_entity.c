@@ -78,6 +78,7 @@ void entity_free(Entity* self)
 	if (!self) return;
 	/* Sprite is not own by the entity. We need to ask the sprite manager to free it*/
 	if (self->sprite) gf2d_sprite_free(self->sprite);
+	if (self->free) self->free(self);
 }
 
 void entity_config(Entity *self,SJson *json) 
@@ -102,7 +103,11 @@ void entity_config(Entity *self,SJson *json)
 }
 
 void entity_draw(Entity* self) {
+	GFC_Vector2D offset, position;
 	if (!self) return;
+
+	offset = camera_get_offset();
+	gfc_vector2d_add(position, self->position, offset);
 
 	if (self->draw) {
 		if (self->draw(self) == -1)return;
@@ -110,7 +115,7 @@ void entity_draw(Entity* self) {
 	else {
 		gf2d_sprite_draw(
 			self->sprite,
-			self->position,
+			position,
 			NULL,
 			NULL,
 			NULL,
@@ -129,6 +134,21 @@ void entity_draw_all() {
 	}
 }
 
+void entity_update(Entity* self) {
+	if (!self) return;
+
+	if (self->update)self->update(self);
+}
+
+void entity_update_all() {
+	int i;
+	for (i = 0; i < entity_system.entity_max; i++)
+	{
+		if (!entity_system.entity_list[i]._inuse)continue;	//Skip this iteration of the loop
+		entity_update(&entity_system.entity_list[i]);
+	}
+}
+
 void entity_think(Entity* self) {
 	if (!self) return;
 	// Check if entity can think and make it do it's think function
@@ -141,5 +161,47 @@ void entity_think_all() {
 	{
 		if (!entity_system.entity_list[i]._inuse)continue;	//Skip this iteration of the loop
 		entity_think(&entity_system.entity_list[i]);
+	}
+}
+
+GFC_Vector2D entity_get_position(Entity* ent) {
+	if (!ent) return;
+
+	return ent->position;
+}
+
+void entity_bounds() {
+	int i;
+	for (i = 0; i < entity_system.entity_max; i++)
+	{
+		if (!entity_system.entity_list[i]._inuse)continue;	//Skip this iteration of the loop
+		if (entity_system.entity_list[i].need_bounds == 1) {//Check if the object needs 
+			if (camera_entity_collision(entity_system.entity_list[i].position) == 0) {
+				entity_system.entity_list[i].cam_coll(&entity_system.entity_list[i]);
+			}
+		}
+	}
+}
+
+GFC_Rect entity_get_hitbox(Entity* self) {
+	if (!self) return;
+	if(&self->hitbox != NULL)return self->hitbox;
+	return gfc_rect(0,0,1,1);
+}
+
+void entity_hitbox() {
+	GFC_Vector2D offset;
+
+	offset = camera_get_offset();
+	int i = 0;
+	for (i = 0; i < entity_system.entity_max; i++)
+	{
+		if (!entity_system.entity_list[i]._inuse)continue;	//Skip this iteration of the loop
+		GFC_Rect entity_hitbox = entity_get_hitbox(&entity_system.entity_list[i]);
+
+		entity_hitbox.x += offset.x;
+		entity_hitbox.y += offset.y;
+
+		gfc_rect_draw(entity_hitbox, GFC_COLOR_BLACK);
 	}
 }
