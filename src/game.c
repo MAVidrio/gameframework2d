@@ -8,6 +8,7 @@
 #include "player.h"
 #include "enemy.h"
 #include "camera_2d.h"
+#include "loot.h"
 
 int main(int argc, char * argv[])
 {
@@ -16,7 +17,8 @@ int main(int argc, char * argv[])
     const Uint8 * keys;
     Sprite *sprite;
     Sprite *player;
-    Entity *p, *pp, *e;
+    Sprite* chest;
+    Entity *p, *pp, *e, *xp, *c;
     const char* characterFile;
     Bool hitbox_on = 0;
     
@@ -52,6 +54,7 @@ int main(int argc, char * argv[])
     characterFile = "defs/player/character_1.def";
     p = player_new(player);
     e = enemy_new(player);
+    xp = xp_new(100, gfc_vector2d(100,100));
 
     //camera setup
     camera_set_bounds(gfc_rect(0,0, 1300, 820));
@@ -74,6 +77,8 @@ int main(int argc, char * argv[])
         if (pf >= 3.0)pf = 0;
         
         entity_bounds();
+        entity_system_collision();
+        entity_get_pos(p);
         entity_think_all();
         entity_update_all();
 

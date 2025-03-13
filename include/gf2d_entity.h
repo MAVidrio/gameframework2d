@@ -18,11 +18,25 @@ typedef enum {
 	PICKUP
 }Tag;
 
+typedef enum {
+	XP,
+	CHEST
+}PickupType;
+
+typedef enum {
+	LASER,
+	SWORD
+}WeaponType;
+
+typedef enum {
+	CH1,
+	CH2
+}CharacterType;
+
 typedef struct Entity_S
 {
 	Uint8			_inuse;		/**<Used to check to see if the entity is in use or not>*/
 
-	GFC_TextLine	name;		/**<name of the entity for debugging>*/
 	Tag				tag;		/**<type of the entity>*/
 	Sprite			*sprite;	/**<the image of the entity>*/
 	float			pf;			/**<the float value for animations*/
@@ -33,6 +47,27 @@ typedef struct Entity_S
 
 	// Enemy
 	GFC_Vector2D	player_pos;	/**<Where the player is.>*/
+	float			need_pos;	/**<Tell manager that it needs player position>*/
+
+	int				max_health; /**<Amount of total health entity has>*/
+	CharacterType	character;	/**<Character of the player>*/
+	int				health;		/**<Amount of health entity has>*/
+	int				recovery;	/**<Amount of health recovered per second>*/
+	int				level;
+	int				xp_need;
+	int				xp;
+	int				growth;
+	float			cooldown;
+	int				speed;
+
+	//Projectile
+	int				pierce;		/**<How many times proj can hit enemies>*/
+	int				damage;		/**<How much damage proj does>*/
+	WeaponType		weapon;		/**<Weapon that is firing>*/
+
+	// Loot
+	PickupType		pickup;		/**<type of pickup if it's a pickup*/
+	int				amount;		/**<Amount of xp or items given from chest*/
 
 	// Camera Bounds
 	float			need_bounds;	/**<Tell everyone if you need camera bounds or not*/
@@ -43,6 +78,7 @@ typedef struct Entity_S
 	void (*update)(struct Entity_S* self);		/**Function to call to execute think's decisions*/
 	int  (*draw)(struct Entity_S* self);		/**Function to call to draw it's model*/
 	void (*free)(struct Entity_S* self);		/**clean up any custom data*/
+	void (*collision)(struct Entity_S* self, struct Entity_S* other);	/**Functoin to call for collision with other entites*/
 	void (*cam_coll)(struct Entity_S* self);	/**Function to call to execute camera collision actions*/
 
 	void			*data;		/**<Used for extra data>*/
@@ -91,7 +127,7 @@ void entity_think_all();
 void entity_update_all();
 
 // If the entity needs player position, it shall recieve it
-GFC_Vector2D entity_get_position(Entity *ent);
+void entity_get_pos(Entity *ent);
 
 void entity_bounds();
 
@@ -99,5 +135,10 @@ void entity_bounds();
 GFC_Rect entity_get_hitbox(Entity* self);
 
 void entity_hitbox();
+
+/*
+* @brief Check all entities if they have collided
+*/
+void entity_system_collision();
 
 #endif

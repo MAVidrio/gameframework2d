@@ -164,10 +164,17 @@ void entity_think_all() {
 	}
 }
 
-GFC_Vector2D entity_get_position(Entity* ent) {
+void entity_get_pos(Entity* ent) {
 	if (!ent) return;
 
-	return ent->position;
+	int i = 0;
+	for (i = 0; i < entity_system.entity_max; i++)
+	{
+		if (!entity_system.entity_list[i]._inuse)continue;	//Skip this iteration of the loop
+		if (entity_system.entity_list[i].need_pos == 1) {
+			entity_system.entity_list[i].player_pos = ent->position;
+		}
+	}
 }
 
 void entity_bounds() {
@@ -203,5 +210,31 @@ void entity_hitbox() {
 		entity_hitbox.y += offset.y;
 
 		gfc_rect_draw(entity_hitbox, GFC_COLOR_BLACK);
+	}
+}
+
+void entity_collision(Entity* self, Entity* other) {
+	if (!self) return;
+	if (!other) return;
+
+	if (self->collision)self->collision(self, other);
+}
+
+void entity_system_collision() {
+	int i,j;
+	for (i = 0; i < entity_system.entity_max; i++)
+	{
+		if (!entity_system.entity_list[i]._inuse)continue;	//Skip this iteration of the loop
+
+		for (j = 0; j < entity_system.entity_max; j++) {
+			if (!entity_system.entity_list[j]._inuse)continue;	//Skip this iteration of the loop
+			if (i == j)continue;								// Skip if the same entity
+
+			if (gfc_rect_overlap(entity_system.entity_list[i].hitbox, entity_system.entity_list[j].hitbox)) {
+				entity_collision(&entity_system.entity_list[i], &entity_system.entity_list[j]);
+				entity_collision(&entity_system.entity_list[j], &entity_system.entity_list[i]);
+			}
+		}
+		
 	}
 }

@@ -7,11 +7,15 @@ typedef struct Enemy_Data {
 	float speed;
 }enemyData;
 
+Entity* rand_enemy_new(GFC_Vector2D playerPos);
+
 /**
 * @brief spawn a test enemy
 * @return NULL on error, or a pointer of the enemy otherwise
 */
 Entity* enemy_new(Sprite* sprite);
+
+void enemy_wave(int amount, GFC_Vector2D playerPos);
 
 /**
 * @brief spawn a enemy from a file

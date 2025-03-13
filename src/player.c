@@ -4,11 +4,13 @@
 #include "gfc_input.h"
 #include "camera_2d.h"
 #include "projectile.h"
+#include "enemy.h"
 
 void player_think(Entity* self);
 void player_update(Entity* self);
 int player_draw(Entity* self);
 void player_free(Entity* self);
+void player_collision(Entity* self, Entity* other);
 
 Entity* player_new(Sprite *sprite) {
 	Entity* self;
@@ -34,10 +36,21 @@ Entity* player_new(Sprite *sprite) {
 	self->update = player_update;
 	self->draw = player_draw;
 	self->free = player_free;
+	self->collision = player_collision;
 
+	self->health = 90;
+	self->max_health = 100;
+	self->recovery = 1;
+	self->level = 1;
+	self->xp_need = 10;
+	self->growth = 1;
+	self->speed = 1;
+	self->cooldown = 150;
+
+	self->need_pos = 0;
 	self->need_bounds = 0;
 
-	slog("Player succefully spawned.");
+	//slog("Player succefully spawned.");
 	//slog("%f/%f/%f", self->collisionX.s.b.xC, self->collisionX.s.b.yC, self->collisionX.s.b.zC);
 	return self;
 }
@@ -59,9 +72,9 @@ Entity* player_new_from_file(const char* filename)
 	player_config_from_file(self, filename);
 
 	self->think = player_think;
-	//self->update = player_update;
-	//self->draw = player_draw;
-	//self->free = player_free;
+	self->update = player_update;
+	self->draw = player_draw;
+	self->free = player_free;
 
 	slog("Player succefully spawned.");
 	//slog("%f/%f/%f", self->collisionX.s.b.xC, self->collisionX.s.b.yC, self->collisionX.s.b.zC);
@@ -104,25 +117,71 @@ void player_update(Entity* self) {
 	Sprite* projectile;
 	GFC_Vector2D shoot_position;
 
+	if (self->xp >= self->xp_need) {
+		self->level += 1;
+		self->xp -= self->xp_need;
+		self->xp_need += 10 * self->level;
+
+		// character specific
+		self->cooldown -= self->cooldown * 0.05;
+		slog("Cooldown: %f", self->cooldown);
+	}
+
 	shoot_position.x = self->position.x;
 	shoot_position.y = self->position.y;
 
-	self->hitbox.x = self->position.x;
-	self->hitbox.y = self->position.y;
+	self->hitbox.x = self->position.x + 27;
+	self->hitbox.y = self->position.y + 27;
 
-	// Fire projectiles
-	if (gfc_input_command_pressed("Debug_Fire") /* || fmodf(self->ff, 240) == 0*/) {
+	// Fire Weapon 1
+	if (gfc_input_command_pressed("Debug_Fire") || fmodf(self->ff, (int)self->cooldown) == 0) {
 		projectile = gf2d_sprite_load_all("images/laser.png", 128, 128, 1, 0);
 
-		slog("Debug firing");
-		//slog("Movement: %f,%f", self->direction.x, self->direction.y);
 		projectile_new(projectile, gfc_vector2d(shoot_position.x,shoot_position.y), self->direction);
+		if (self->level >= 2) {
+			projectile_new(projectile, gfc_vector2d(shoot_position.x, shoot_position.y - 20), self->direction);
+		}
+		if (self->level >= 4) {
+			projectile_new(projectile, gfc_vector2d(shoot_position.x, shoot_position.y + 20), self->direction);
+		}
+		if (self->level >= 6) {
+			self->damage = 4;
+			projectile_new(projectile, gfc_vector2d(shoot_position.x - 20, shoot_position.y), self->direction);
+		}
+	}
+	// Fire Weapon 2
+	if (gfc_input_command_pressed("Debug_Fire") || fmodf(self->ff, (int)self->cooldown) == 0) {
+		projectile = gf2d_sprite_load_all("images/projectile/sword_swing.png", 128, 128, 1, 0);
 
-		/* How to do projectiles*/
-		//1. Go throught weapon manager
-		//2. 
+		//projectile_new(projectile, gfc_vector2d(shoot_position.x, shoot_position.y), self->direction);
+		weapon_projectile_new(projectile, gfc_vector2d(shoot_position.x, shoot_position.y), self->direction, SWORD, self->level);
+		/*if (self->level >= 2) {
+			projectile_new(projectile, gfc_vector2d(shoot_position.x, shoot_position.y - 20), self->direction);
+		}
+		if (self->level >= 4) {
+			projectile_new(projectile, gfc_vector2d(shoot_position.x, shoot_position.y + 20), self->direction);
+		}
+		if (self->level >= 6) {
+			self->damage = 4;
+			projectile_new(projectile, gfc_vector2d(shoot_position.x - 20, shoot_position.y), self->direction);
+		}*/
+	}
+	// Debug: Show level, xp required and xp amount
+	if (gfc_input_command_pressed("Debug_Show_Level")) {
+		slog("Level: %i", self->level);
+		slog("Xp Needed: %i", self->xp_need);
+		slog("Xp Have: %i", self->xp);
 	}
 
+	// Heal
+	if (fmodf(self->ff, 100) == 0 && self->health != self->max_health) {
+		self->health += self->recovery;
+	}
+
+	//Test Spawn next wave
+	if (fmodf(self->ff, 240) == 0) {
+		enemy_wave(1, self->position);
+	}
 	self->ff += 1;
 }
 
@@ -183,9 +242,15 @@ int player_draw(Entity* self)
 {
 	GFC_Vector2D offset, position;
 	if (!self) return;
-
+	GFC_Rect healthbarB;
+	GFC_Rect healthbar;
+	GFC_Rect levelbar;
 	offset = camera_get_offset();
 	gfc_vector2d_add(position, self->position, offset);
+
+	healthbarB = gfc_rect(position.x + 12, position.y + 100, 100, 10);
+	healthbar = gfc_rect(position.x + 12, position.y + 100, self->health, 10);
+	levelbar = gfc_rect(position.x - 500, position.y - 300, 100, 100);
 
 	gf2d_sprite_draw(
 		self->sprite,
@@ -196,6 +261,14 @@ int player_draw(Entity* self)
 		NULL,
 		NULL,
 		(int)self->pf);
+
+	// Show health bar
+	gfc_rect_draw(healthbarB, GFC_COLOR_BLACK);
+	gfc_rect_draw(healthbar, GFC_COLOR_RED);
+
+	// Show level
+	//gfc_rect_draw(levelbar, GFC_COLOR_BLUE);
+	
 	return;
 }
 
@@ -205,6 +278,29 @@ void player_free(Entity* self) {
 	if (!pData) return;
 	free(pData);
 	memset(self, 0, sizeof(Entity));
+}
+
+void player_collision(Entity* self, Entity* other) {
+	Tag otherTag = other->tag;
+
+	switch (otherTag) {
+	case ENEMY:
+		self->health -= other->damage;
+		if (self->health == 0) slog("Dead");
+		break;
+	case PICKUP:
+		if (other->pickup == XP) {
+			slog("Pickup XP amount: %i", other->amount);
+			self->xp += other->amount * self->growth;
+			break;
+		}
+		else if (other->pickup == CHEST) {
+			slog("Pickup Chest amount: %i", other->amount);
+			break;
+		}
+	default:
+		break;
+	}
 }
 
 GFC_Vector2D player_get_position(Entity *self) {
