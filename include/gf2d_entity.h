@@ -9,6 +9,7 @@
 #include "gfc_text.h"
 #include "gfc_vector.h"
 #include "camera_2d.h"
+#include "gf2d_draw.h"
 
 typedef enum {
 	NA,
@@ -24,8 +25,10 @@ typedef enum {
 }PickupType;
 
 typedef enum {
+	ACCESSORY,
 	LASER,
-	SWORD
+	SWORD,
+	CIRCLE
 }WeaponType;
 
 typedef enum {

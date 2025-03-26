@@ -1,0 +1,30 @@
+{
+  "0.0": {
+    "WeaponType": 1,
+    "Id": 0.0,
+    "Amount": 1,
+    "Damage": 5,
+    "Pierce": 1,
+    "Speed": 1,
+    "Max": 10,
+    "Time": 60,
+    "req_1": -0.2,
+    "req_3": -0.2,
+    "req_2": -0.2,
+    "Sprite_P": "images/laser.png"
+  },
+  "0.1": {
+    "WeaponType": 1,
+    "Id": 0.0,
+    "Amount": 1,
+    "Damage": 1,
+    "Pierce": 1,
+    "Speed": 1,
+    "Max": 10,
+    "Time": 60,
+    "req_1": -0.2,
+    "req_3": -0.2,
+    "req_2": -0.2,
+    "Sprite_P": "images/laser.png"
+  }
+}

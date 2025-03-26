@@ -1,6 +1,7 @@
 #include "simple_logger.h"
 
 #include "player.h"
+#include "weapon.h"
 #include "gfc_input.h"
 #include "camera_2d.h"
 #include "projectile.h"
@@ -20,6 +21,9 @@ Entity* player_new(Sprite *sprite) {
 		slog("Failed to spawn player entity.");
 		return NULL;
 	}
+
+	// initialize this player's weapon system
+	weapon_system_init(12);
 
 	// Define
 	self->tag = PLAYER;
@@ -49,6 +53,8 @@ Entity* player_new(Sprite *sprite) {
 
 	self->need_pos = 0;
 	self->need_bounds = 0;
+
+	add_weapon("0.0");
 
 	//slog("Player succefully spawned.");
 	//slog("%f/%f/%f", self->collisionX.s.b.xC, self->collisionX.s.b.yC, self->collisionX.s.b.zC);
@@ -132,6 +138,10 @@ void player_update(Entity* self) {
 
 	self->hitbox.x = self->position.x + 27;
 	self->hitbox.y = self->position.y + 27;
+
+	// Call all weapons to fire
+	weapon_think_all(shoot_position, self->direction);
+
 
 	// Fire Weapon 1
 	if (gfc_input_command_pressed("Debug_Fire") || fmodf(self->ff, (int)self->cooldown) == 0) {
@@ -263,8 +273,8 @@ int player_draw(Entity* self)
 		(int)self->pf);
 
 	// Show health bar
-	gfc_rect_draw(healthbarB, GFC_COLOR_BLACK);
-	gfc_rect_draw(healthbar, GFC_COLOR_RED);
+	gf2d_draw_rect_filled(healthbarB, GFC_COLOR_BLACK);
+	gf2d_draw_rect_filled(healthbar, GFC_COLOR_RED);
 
 	// Show level
 	//gfc_rect_draw(levelbar, GFC_COLOR_BLUE);
@@ -274,6 +284,7 @@ int player_draw(Entity* self)
 
 void player_free(Entity* self) {
 	if (!self)return;
+	weapon_system_close();
 	playerData* pData = self->data;
 	if (!pData) return;
 	free(pData);

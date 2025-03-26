@@ -120,10 +120,10 @@ void enemy_wave(int amount, GFC_Vector2D playerPos) {
 		int randX = rand() % 2;
 		int randY = rand() % 2;
 
-		if (randX == 0)spawn.x = playerPos.x - (rand() % 500);
-		else spawn.x = playerPos.x + (rand() % 500);
-		if (randY == 0)spawn.y = playerPos.y - (rand() % 500);
-		else spawn.y = playerPos.y + (rand() % 500);
+		if (randX == 0)spawn.x = playerPos.x - (rand() % 500);	//Left Side
+		else spawn.x = playerPos.x + (rand() % 500);			//Right Side
+		if (randY == 0)spawn.y = playerPos.y - (rand() % 500);	//Top Side
+		else spawn.y = playerPos.y + (rand() % 500);			//Bottom Side
 
 		//slog("Spawn at %f/%f", spawn.x, spawn.y);
 

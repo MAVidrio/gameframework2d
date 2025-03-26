@@ -209,7 +209,7 @@ void entity_hitbox() {
 		entity_hitbox.x += offset.x;
 		entity_hitbox.y += offset.y;
 
-		gfc_rect_draw(entity_hitbox, GFC_COLOR_BLACK);
+		gf2d_draw_rect_filled(entity_hitbox, GFC_COLOR_BLACK);
 	}
 }
 

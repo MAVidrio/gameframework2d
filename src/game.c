@@ -9,6 +9,7 @@
 #include "enemy.h"
 #include "camera_2d.h"
 #include "loot.h"
+#include "weapon.h"
 
 int main(int argc, char * argv[])
 {
@@ -43,6 +44,7 @@ int main(int argc, char * argv[])
     gf2d_graphics_set_frame_delay(16);
     gf2d_sprite_init(1024);
     entity_system_init(1024);
+    //weapon_system_init(12);
     SDL_ShowCursor(SDL_DISABLE);
     camera_set_size(gfc_vector2d(1200, 720));
     
@@ -131,6 +133,7 @@ int main(int argc, char * argv[])
         //slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
     }
     entity_system_close();
+    weapon_system_close();
     slog("---==== END ====---");
     return 0;
 }
