@@ -139,22 +139,22 @@ void enemy_think(Entity* self) {
 
 	// Player is to the left
 	if (self->position.x >= playerPos.x) {
-		movement.x -= 0.5;
+		movement.x -= 0.2;
 		//dir.x -= 1;
 	}
 	// Player is to the right
 	else if (self->position.x <= playerPos.x) {
-		movement.x += 0.5;
+		movement.x += 0.2;
 		//dir.x += 1;
 	}
 	// Player is below
 	if (self->position.y >= playerPos.y) {
-		movement.y -= 0.5;
+		movement.y -= 0.2;
 		//dir.y += 1;
 	}
 	// Player is above
 	else if (self->position.y <= playerPos.y) {
-		movement.y += 0.5;
+		movement.y += 0.2;
 		//dir.y -= 1;
 	}
 

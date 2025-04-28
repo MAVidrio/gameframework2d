@@ -42,6 +42,8 @@ Entity* player_new(Sprite *sprite) {
 	self->free = player_free;
 	self->collision = player_collision;
 
+	self->weapon_amount = get_amount_weapons();
+
 	self->health = 90;
 	self->max_health = 100;
 	self->recovery = 1;
@@ -54,7 +56,7 @@ Entity* player_new(Sprite *sprite) {
 	self->need_pos = 0;
 	self->need_bounds = 0;
 
-	add_weapon("0.0");
+	//add_weapon("0");
 
 	//slog("Player succefully spawned.");
 	//slog("%f/%f/%f", self->collisionX.s.b.xC, self->collisionX.s.b.yC, self->collisionX.s.b.zC);
@@ -120,13 +122,15 @@ void player_config(Entity* self, SJson* json)
 
 void player_update(Entity* self) {
 	if (!self) return;
-	Sprite* projectile;
 	GFC_Vector2D shoot_position;
 
 	if (self->xp >= self->xp_need) {
 		self->level += 1;
 		self->xp -= self->xp_need;
 		self->xp_need += 10 * self->level;
+
+		// Level-up Random Weapon
+		upgrade_rand();
 
 		// character specific
 		self->cooldown -= self->cooldown * 0.05;
@@ -140,9 +144,11 @@ void player_update(Entity* self) {
 	self->hitbox.y = self->position.y + 27;
 
 	// Call all weapons to fire
-	weapon_think_all(shoot_position, self->direction);
+	weapon_think_all(shoot_position, self->direction, self->amount);
 
-
+	// Call all weapons to update
+	weapon_update_all();
+	/*
 	// Fire Weapon 1
 	if (gfc_input_command_pressed("Debug_Fire") || fmodf(self->ff, (int)self->cooldown) == 0) {
 		projectile = gf2d_sprite_load_all("images/laser.png", 128, 128, 1, 0);
@@ -174,15 +180,15 @@ void player_update(Entity* self) {
 		if (self->level >= 6) {
 			self->damage = 4;
 			projectile_new(projectile, gfc_vector2d(shoot_position.x - 20, shoot_position.y), self->direction);
-		}*/
-	}
-	// Debug: Show level, xp required and xp amount
+		}
+	}*/
+	/*// Debug: Show level, xp required and xp amount
 	if (gfc_input_command_pressed("Debug_Show_Level")) {
 		slog("Level: %i", self->level);
 		slog("Xp Needed: %i", self->xp_need);
 		slog("Xp Have: %i", self->xp);
 	}
-
+	*/
 	// Heal
 	if (fmodf(self->ff, 100) == 0 && self->health != self->max_health) {
 		self->health += self->recovery;
@@ -198,8 +204,11 @@ void player_update(Entity* self) {
 void player_think(Entity* self) {
 	if (!self)return;
 
+
+
 	GFC_Vector2D movement = gfc_vector2d(0, 0);
 	GFC_Vector2D dir;
+	GFC_Vector2D shoot_position;
 	gfc_vector2d_copy(dir, self->direction);
 
 	// Controls
@@ -317,4 +326,25 @@ void player_collision(Entity* self, Entity* other) {
 GFC_Vector2D player_get_position(Entity *self) {
 	if (!self)return;
 	return self->position;
+}
+
+void add_debug_weapon() {
+	//slog("Removing weapon");
+	//remove_weapon(0);
+
+	slog("Adding debug weapon");
+	new_custom_weapon_from_debug();
+}
+
+void save_debug_weapon() {
+	save_weapon(0);
+}
+
+void get_weapon(const char* id) {
+	slog("Adding weapon");
+	add_weapon(id);
+}
+
+int get_amount_weapons() {
+	return count_weapons();
 }

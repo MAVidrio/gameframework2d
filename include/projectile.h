@@ -8,16 +8,20 @@ typedef struct Projectile_Data {
 	float speed;
 }projectileData;
 
-typedef struct {
+typedef struct Hit_List{
 	Uint32 entity_max;
 	Entity* entity_list;
 }HitList;
-
-Entity* weapon_projectile_new(Sprite* sprite, GFC_Vector2D position, GFC_Vector2D direction, WeaponType weapon, int level);
-
+/**
+* @brief spawn a projectile from weapon object
+* @return NULL on error, or a pointer of the projectile otherwise
+* @note Used only for weapon class
+*/
+Entity* weapon_projectile_new(Sprite* sprite, GFC_Vector2D position, GFC_Vector2D direction,
+	WeaponType weapon, int damage, int pierce, int level);
 /**
 * @brief spawn a projectile entity
-* @return NULL on error, or a pointer of the player otherwise
+* @return NULL on error, or a pointer of the projectile otherwise
 */
 Entity* projectile_new(Sprite* sprite,GFC_Vector2D position, GFC_Vector2D direction);
 

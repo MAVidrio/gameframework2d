@@ -4,6 +4,7 @@
 #include "player.h"
 #include "camera_2d.h"
 
+// Laser Weapon
 void projectile_think(Entity* self);
 void projectile_update(Entity* self);
 int projectile_draw(Entity* self);
@@ -16,7 +17,8 @@ void weapon_2_update(Entity* self);
 int weapon_2_draw(Entity* self);
 void weapon2_projectile_coll(Entity* self, Entity* other);
 
-Entity* weapon_projectile_new(Sprite* sprite, GFC_Vector2D position, GFC_Vector2D direction, WeaponType weapon, int level) {
+Entity* weapon_projectile_new(Sprite* sprite, GFC_Vector2D position, GFC_Vector2D direction,
+	WeaponType weapon, int damage, int pierce, int level) {
 	Entity* self;
 	self = entity_new();
 	if (!self)
@@ -35,6 +37,7 @@ Entity* weapon_projectile_new(Sprite* sprite, GFC_Vector2D position, GFC_Vector2
 	self->direction = direction;
 	self->hitbox = gfc_rect(self->position.x + 27, self->position.y + 27, 100, 100);
 
+	// Set projectiles to correct weapon type
 	switch (weapon) {
 	case LASER:
 		self->think = projectile_think;
@@ -43,13 +46,18 @@ Entity* weapon_projectile_new(Sprite* sprite, GFC_Vector2D position, GFC_Vector2
 		self->free = projectile_free;
 		self->cam_coll = projectile_cam_coll;
 		self->collision = projectile_coll;
+		// Camera bounds
+		self->need_bounds = 1.0;
 		break;
 	case SWORD:
 		self->update = weapon_2_update;
 		self->draw = weapon_2_draw;
 		self->free = projectile_free;
 		self->collision = weapon2_projectile_coll;
+		// Camera bounds
+		self->need_bounds = 0.0;
 		break;
+	case AREA:
 	default:
 		self->think = projectile_think;
 		self->update = projectile_update;
@@ -57,15 +65,42 @@ Entity* weapon_projectile_new(Sprite* sprite, GFC_Vector2D position, GFC_Vector2
 		self->free = projectile_free;
 		self->cam_coll = projectile_cam_coll;
 		self->collision = projectile_coll;
+		// Camera bounds
+		self->need_bounds = 0.0;
 		break;
 	}
 	
+	self->level = level;
 
-	self->damage = 5;
-	self->pierce = 1;
-
-	// Camera bounds
-	self->need_bounds = 0.0;
+	// Set damage and pierce values depending on levels
+	switch (self->level) {
+	case 10:
+		self->damage = damage + 5;
+		self->pierce = pierce + 3;
+		break;
+	case 9:
+	case 8:
+	case 7:
+		self->damage = damage + 3;
+		self->pierce = pierce + 2;
+		break;
+	case 6:
+	case 5:
+	case 4:
+		self->damage = damage + 2;
+		self->pierce = pierce + 1;
+		break;
+	case 3:
+	case 2:
+	case 1:
+		self->damage = damage + 1;
+		self->pierce = pierce;
+		break;
+	default:
+		self->damage = damage;
+		self->pierce = pierce;
+		break;
+	}
 
 	self->need_pos = 1;
 
@@ -166,7 +201,7 @@ void projectile_config(Entity* self, SJson* json)
 	//sj_object_get_float(json, "speedMax", &self->speedMax);
 	//sj_object_get_vector4d
 }
-
+/*-------------------- ( WEAPON 1 ) -----------------------*/
 void projectile_update(Entity* self) {
 	if (!self) return;
 
@@ -182,9 +217,28 @@ void projectile_think(Entity* self) {
 	if (!self)return;
 
 	GFC_Vector2D movement = gfc_vector2d(0, 0);
-
-	movement.x = self->direction.x * 2;
-	movement.y = self->direction.y * 2;
+	switch (self->level) {
+	case (1):
+		movement.x = self->direction.x * 2;
+		movement.y = self->direction.y * 2;
+		break;
+	case 2:
+		movement.x = (self->direction.x * 2) / 0.8;
+		movement.y = (self->direction.y * 2) / 0.8;
+		break;
+	case 4:
+		movement.x = (self->direction.x * 2) / 0.6;
+		movement.y = (self->direction.y * 2) / 0.6;
+		break;
+	case 6:
+		movement.x = (self->direction.x * 2) / 0.4;
+		movement.y = (self->direction.y * 2) / 0.4;
+		break;
+	default:
+		movement.x = (self->direction.x * 2) / 0.2;
+		movement.y = (self->direction.y * 2) / 0.2;
+		break;
+	}
 
 	gfc_vector2d_add(self->position, self->position, movement);
 }
@@ -245,7 +299,7 @@ void projectile_coll(Entity* self, Entity* other) {
 void weapon_2_update(Entity* self) {
 	if (!self) return;
 	self->position = self->player_pos;
-	if (self->ff >= 50) {
+	if (self->ff >= 30) {
 		projectile_free(self);
 	}
 

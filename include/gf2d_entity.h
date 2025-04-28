@@ -28,7 +28,7 @@ typedef enum {
 	ACCESSORY,
 	LASER,
 	SWORD,
-	CIRCLE
+	AREA
 }WeaponType;
 
 typedef enum {
@@ -83,6 +83,7 @@ typedef struct Entity_S
 	void (*free)(struct Entity_S* self);		/**clean up any custom data*/
 	void (*collision)(struct Entity_S* self, struct Entity_S* other);	/**Functoin to call for collision with other entites*/
 	void (*cam_coll)(struct Entity_S* self);	/**Function to call to execute camera collision actions*/
+	void (*weapon_amount)();					/**Function to call when wanting the amount of weapons player has*/
 
 	void			*data;		/**<Used for extra data>*/
 }Entity;

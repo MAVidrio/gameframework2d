@@ -5,10 +5,10 @@
 
 typedef struct Weapon_Data {
 	WeaponType w_type;
-	double id;
+	int id;
 
 	int amount;
-	int damage;
+	float damage;
 	int pierce;
 	float speed;
 	int level;
@@ -28,11 +28,7 @@ typedef struct Weapon_Data {
 typedef struct Weapon_Struct {
 	Uint8			_inuse;		/**<Used to check to see if the weapon slot is in use or not>*/
 	float wf;		// Float for attack
-
-
-	void (*think)(struct Weapon_S* self);		/**Function to call for firing weapon*/
-	void (*update)(struct Weapon_S* self);		/**Function to call for changing stats*/
-	void (*free)(struct Weapon_S* self);
+	int level;		// Current level of the weapon
 
 	void* data;		/**<Used for extra data>*/
 }Weapon;
@@ -49,6 +45,26 @@ void weapon_system_init(Uint32 maxWeaps);
 * @brief free all weapons in the manager
 */
 void weapon_system_free_all();
+
+/**
+* @brief Add a new weapon to the end of weapon_id_list.def file
+*/
+Weapon* create_weapon_from_debug();
+
+/**
+* @brief Modify the custom weapon's stats
+*/
+void modify_custom_weapon();
+
+/**
+* @brief Create a custom weapon from debug
+*/
+Weapon* new_custom_weapon_from_debug();
+
+/**
+* @brief Save the custom weapon to the weapon list file
+*/
+void save_custom_weapon_to_json(Weapon* self);
 
 /*
 * @brief free the weapon
@@ -72,7 +88,7 @@ Weapon* add_weapon(const char* id);
 * @brief Makes all active weapons run their think functions
 * @note Used for simple calling for thinking of all weapons.
 */
-void weapon_think_all(GFC_Vector2D shootPos, GFC_Vector2D direction);
+void weapon_think_all(GFC_Vector2D shootPos, GFC_Vector2D direction, int amount);
 
 /*
 * @brief Makes all active weapons run their update functions
@@ -85,5 +101,17 @@ void weapon_update_all();
 * @note Used for updating stats of all weapons when accessory is obtained/leveled up
 */
 void accessory_update_all();
+
+/*
+* @brief Upgrades a random weapon
+* @note 
+*/
+void upgrade_rand();
+
+void remove_weapon(int key);
+
+void save_weapon(int key);
+
+int count_weapons();
 
 #endif

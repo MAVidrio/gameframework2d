@@ -1,0 +1,11 @@
+{
+  "0": {
+    "2": { "Damage": 0.2 },
+    "3": { "Damage": 0.2, "Speed": 0.4 },
+    "4": { "Amount": 1 },
+    "5": { "Damage": 0.2, "Pierce": 1 },
+    "6": { "Damage": 0.2, "Speed": 0.4 },
+    "7": { "Damage": 0.2 },
+    "8": { "Amount": 1, "Damage": 0.2 }
+  }
+}

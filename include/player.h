@@ -32,4 +32,12 @@ Entity* player_new_from_file(const char* filename);
 void player_config_from_file(Entity *self, const char* filename);
 
 GFC_Vector2D player_get_position(Entity* self);
+
+void add_debug_weapon();
+
+void save_debug_weapon();
+
+void get_weapon(const char* id);
+
+int get_amount_weapons();
 #endif
